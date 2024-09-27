@@ -1,0 +1,35 @@
+
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model subscription {
+  id Int @id @default(autoincrement())
+  data String?
+}
+
+model post {
+  id Int @id @default(autoincrement())
+  angler String @db.VarChar(100)
+  fishSpecies String @db.VarChar(100)
+  date DateTime @db.Date 
+  location String? @db.VarChar(100)
+  weight Float?
+  length Float?
+  temperature Float?
+  pressure Float?
+  image String 
+  voiceMessage String?
+  dateCreated DateTime @db.Timestamp @default(now())
+}
+
+model fish {
+  fishId Int @id @default(autoincrement())
+  fishName String @db.VarChar(100)
+}

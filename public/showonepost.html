@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="manifest" href="manifest.json">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="stylesheets/header.css">
+    <link rel="stylesheet" href="stylesheets/feed.css">
+    <title>Snap My Catch</title>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-md navbar-light bg-light">
+        <a class="navbar-brand" href="index.html">
+            <img src="favicon.ico" alt="">
+            <span class="app-title">Snap My Catch</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="post.html">Objavi</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="feed.html">Pregledaj objave</a>
+                </li>
+            </ul>
+        </div>
+        <script src = "scripts/header.js"></script>
+    </nav>
+
+    <div id="loading-page">
+        <style>
+            .loading {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100px;
+            }
+
+            .loading .spinner {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                border: 4px solid #f3f3f3;
+                border-top: 4px solid #3498db;
+                animation: spin 1s linear infinite;
+            }
+
+            @keyframes spin {
+                0% {
+                    transform: rotate(0deg);
+                }
+                100% {
+                    transform: rotate(360deg);
+                }
+            }
+        </style>
+        <div class="loading">
+            <div class="spinner"></div>
+        </div>
+    </div>
+    <div id="post-container"></div>
+    <script id="post-template" type="text/template">
+        <div class="grid-item container w-75 post-container p-2" id="{{id}}">
+            <h2 class="lead text-center">{{angler}}</h2>
+            <hr>
+            <img src="{{image}}" class="photo-element" alt="">
+            <div class="table-container">
+                <div class="grid-container">
+                    <div class="grid-item">
+                        <strong>Vrsta:</strong>
+                    </div>
+                    <div class="grid-item">
+                        {{fishSpecies}}
+                    </div>
+                    <div class="grid-item">
+                        <strong>Datum:</strong>
+                    </div>
+                    <div class="grid-item">
+                        {{date}}
+                    </div>
+                    <div class="grid-item">
+                        <strong>Duljina:</strong>
+                    </div>
+                    <div class="grid-item">
+                        {{length}} cm
+                    </div>
+                    <div class="grid-item">
+                        <strong>Težina:</strong>
+                    </div>
+                    <div class="grid-item">
+                        {{weight}} kg
+                    </div>
+                    <div class="grid-item">
+                        <strong>Temperatura:</strong>
+                    </div>
+                    <div class="grid-item">
+                        {{temperature}} °C
+                    </div>
+                    <div class="grid-item">
+                        <strong>Tlak zraka:</strong>
+                    </div>
+                    <div class="grid-item">
+                        {{pressure}} hPa
+                    </div>
+                    <div class="grid-item">
+                        <strong>Lokacija:</strong>
+                    </div>
+                    <div class="grid-item">
+                        {{location}}
+                    </div>
+                </div>
+                <div class="grid-item">
+                    <strong>Glasovni opis:</strong>
+                </div>
+                <div class="d-flex justify-content-center">
+                    <audio controls>
+                        <source src="{{voiceMessage}}" type="audio/mpeg">
+                        Your browser does not support the audio element.
+                    </audio>
+                </div>
+                <div class="grid-item">
+                    <button class="btn btn-light" onclick="copyToClipboard('/onepost?id={{id}}')">Kopiraj link</button>
+                </div>
+            </div>
+        </div>
+        <hr>
+    </script>
+    <script>
+        window.addEventListener('DOMContentLoaded', function () {
+            var loadingPage = document.getElementById('loading-page');
+            var postContainer = document.getElementById('post-container');
+            var postTemplate = document.getElementById('post-template').innerHTML;
+            var urlParams = new URLSearchParams(window.location.search);
+            var postId = urlParams.get('id');
+            fetch('/onepost/getpost?id=' + postId)
+                .then(function (response) {
+                    return response.json();
+                })
+                .then(function (data) {
+                    loadingPage.style.display = 'none';
+                    var renderedTemplate = postTemplate.replace(/{{(.*?)}}/g, function (match, key) {
+                        return data[key];
+                    });
+                    if (data.voiceMessage != null && data.voiceMessage != "N/A") {
+                        const audio = new Audio(data.voiceMessage);
+                        renderedTemplate = renderedTemplate.replace(/<source src="{{voiceMessage}}" type="audio\/mpeg">/g, "<source src=\"" + data.voiceMessage + "\" type=\"audio\/mpeg\">");
+                    }
+                    postContainer.innerHTML = renderedTemplate;
+                })
+                .catch(function (error) {
+                    //console.error('Error:', error);
+                });
+        });
+    </script>
+</body>
+
+</html>
